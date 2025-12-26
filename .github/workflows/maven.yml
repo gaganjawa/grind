@@ -30,6 +30,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-m2-
 
-      - name: Build and run tests
-        run: mvn -B test
+      - name: Build and run tests (with coverage)
+        run: mvn -B verify
 
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: target/site/jacoco/jacoco.xml
+          flags: unittests
+          fail_ci_if_error: false

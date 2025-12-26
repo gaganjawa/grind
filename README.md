@@ -2,6 +2,7 @@
 
 [//]: # (CI badge)
 [![CI](https://github.com/gaganjawa/grind/actions/workflows/maven.yml/badge.svg)](https://github.com/gaganjawa/grind/actions/workflows/maven.yml)
+[![Coverage](https://img.shields.io/codecov/c/gh/gaganjawa/grind?logo=codecov&label=coverage)](https://codecov.io/gh/gaganjawa/grind)
 
 ## Running tests
 
@@ -25,4 +26,6 @@ If tests refer to missing dependencies in your IDE, run `mvn test` once to downl
 
 A GitHub Actions workflow is included at `.github/workflows/maven.yml`. It runs the Maven test goal on every push and on pull requests to any branch.
 
-To enable the CI badge above, the badge URL already points to your repository.
+The workflow now generates a JaCoCo coverage report and uploads it to Codecov. The coverage badge above reflects the most recent Codecov report for the repository.
+
+To enable Codecov uploads for private repos or to increase security, set the `CODECOV_TOKEN` secret in your repository settings and add `token: ${{ secrets.CODECOV_TOKEN }}` under the Codecov action 'with' block in `.github/workflows/maven.yml`.
