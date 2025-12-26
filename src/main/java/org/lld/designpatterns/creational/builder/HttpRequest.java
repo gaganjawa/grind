@@ -1,5 +1,6 @@
 package org.lld.designpatterns.creational.builder;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -57,8 +58,8 @@ public class HttpRequest {
     private HttpRequest(HttpRequestBuilder builder) {
         this.method = builder.method;
         this.url = builder.url;
-        this.headers = builder.headers;
-        this.queryParams = builder.queryParams;
+        this.headers = Collections.unmodifiableMap(builder.headers);
+        this.queryParams = Collections.unmodifiableMap(builder.queryParams);
         this.body = builder.body;
         this.timeout = builder.timeout;
         this.authentication = builder.authentication;

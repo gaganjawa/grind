@@ -32,7 +32,7 @@ public class HttpRequestBuilderTest {
                         .build()
         );
 
-        assertEquals("HTTP method is mandatory", ex.getMessage());
+        assertEquals("HTTP Method is required", ex.getMessage());
     }
 
     @Test
@@ -44,7 +44,7 @@ public class HttpRequestBuilderTest {
                         .build()
         );
 
-        assertEquals("URL is mandatory", ex.getMessage());
+        assertEquals("URL is required", ex.getMessage());
     }
 
     @Test
