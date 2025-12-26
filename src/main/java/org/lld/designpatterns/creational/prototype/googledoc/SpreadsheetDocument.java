@@ -1,4 +1,4 @@
-package org.lld.designpatterns.creational.prototype;
+package org.lld.designpatterns.creational.prototype.googledoc;
 
 public class SpreadsheetDocument extends Document {
 

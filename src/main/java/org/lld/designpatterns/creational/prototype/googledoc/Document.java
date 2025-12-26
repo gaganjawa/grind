@@ -1,4 +1,4 @@
-package org.lld.designpatterns.creational.prototype;
+package org.lld.designpatterns.creational.prototype.googledoc;
 
 import java.util.UUID;
 
@@ -23,6 +23,14 @@ public abstract class Document {
         this.content = content;
         this.metadata = new Metadata("system");
         this.permissions = new Permissions();
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
     }
 
     public abstract Document clone();
