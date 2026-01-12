@@ -1,4 +1,4 @@
-name: Java CI - Maven
+name: Deprecated Java CI - Maven
 
 on:
   push:
@@ -7,35 +7,10 @@ on:
     branches: ['**']
 
 jobs:
-  build:
+  deprecation-notice:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up JDK 18
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '18'
-
-      - name: Cache Maven local repository
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.m2/repository
-            ./.mvn
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-m2-
-
-      - name: Build and run tests (with coverage)
-        run: mvn -B verify
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          files: target/site/jacoco/jacoco.xml
-          flags: unittests
-          fail_ci_if_error: false
+      - name: Log deprecation notice
+        run: |
+          echo "This workflow is deprecated. Please refer to the new workflow configuration in '.github/workflows/ci-maven.yml'."

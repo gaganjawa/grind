@@ -9,9 +9,15 @@
     <version>1.0-SNAPSHOT</version>
 
     <properties>
-        <maven.compiler.source>18</maven.compiler.source>
-        <maven.compiler.target>18</maven.compiler.target>
+        <!-- Target Java 25 for compilation (Java 25 released 2026-01-13) -->
+        <maven.compiler.source>25</maven.compiler.source>
+        <maven.compiler.target>25</maven.compiler.target>
+        <maven.compiler.release>25</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- Control JaCoCo instrumentation; some JaCoCo versions don't support very-new JDK classfile versions -->
+        <jacoco.skip>false</jacoco.skip>
+        <!-- Use a recent JaCoCo version that supports newer JDK classfile versions -->
+        <jacoco.version>0.8.13</jacoco.version>
     </properties>
 
     <dependencies>
@@ -40,7 +46,11 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.8</version>
+                <version>${jacoco.version}</version>
+                <configuration>
+                    <!-- allow skipping when running on very-new JDKs that JaCoCo doesn't yet support -->
+                    <skip>${jacoco.skip}</skip>
+                </configuration>
                 <executions>
                     <execution>
                         <id>prepare-agent</id>
@@ -60,5 +70,19 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!-- If running on JDK 19 or newer, skip JaCoCo instrumentation because older JaCoCo versions
+             may not support very new class file major versions. Activation uses the <jdk> range syntax. -->
+        <profile>
+            <id>skip-jacoco-on-newer-jdk</id>
+            <activation>
+                <jdk>[19,)</jdk>
+            </activation>
+            <properties>
+                <jacoco.skip>true</jacoco.skip>
+            </properties>
+        </profile>
+    </profiles>
 
 </project>
