@@ -69,6 +69,7 @@ public class NotificationTest {
             n.notify("a b c");
         });
         // compressed becomes "abc" -> base64 "YWJj"
+        // encrypted becomes "YSBiIGM="
         Assertions.assertTrue(out.contains("Sending Notification: YSBiIGM="));
     }
 
