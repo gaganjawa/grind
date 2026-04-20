@@ -2,8 +2,9 @@ package org.multithreading.threadpool;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class CustomThreadPool {
 
@@ -26,6 +27,15 @@ public class CustomThreadPool {
             throw new IllegalStateException("ThreadPool is shutdown");
         }
         taskQueue.put(task); // This will block if the queue is full
+    }
+
+    public <V> Future<V> submit(Callable<V> task) throws InterruptedException {
+        if (isShutdown) {
+            throw new IllegalStateException("ThreadPool is shutdown");
+        }
+        FutureTask<V> futureTask = new FutureTask<>(task);
+        taskQueue.put(futureTask);
+        return futureTask;
     }
 
     /**
@@ -85,6 +95,106 @@ public class CustomThreadPool {
                 // If interrupted, exit only if shutdown and queue is empty; otherwise restore interrupt
                 if (!(isShutdown && taskQueue.isEmpty())) {
                     Thread.currentThread().interrupt();
+                }
+            }
+        }
+    }
+
+    private class FutureTask<V> implements Runnable, Future<V> {
+
+        private final Callable<V> callable;
+        private V result;
+        private volatile boolean isDone = false;
+        private volatile boolean isCancelled = false;
+        private volatile Thread runner = null;
+        private Exception executionException = null;
+
+        private final ReentrantLock lock = new ReentrantLock();
+        private final Condition doneCondition = lock.newCondition();
+
+        public FutureTask(Callable<V> callable) {
+            this.callable = callable;
+        }
+
+
+        public V get() throws InterruptedException, ExecutionException {
+            lock.lock();
+            try {
+                while (!isDone && !isCancelled) doneCondition.await();
+
+                if (isCancelled) throw new CancellationException();
+                if (executionException != null) throw new ExecutionException(executionException);
+                return result;
+            } finally {
+                lock.unlock();
+            }
+        }
+
+        public V get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException {
+            long nanos = unit.toNanos(timeout);
+            lock.lock();
+            try {
+                while (!isDone && !isCancelled && nanos > 0L) {
+                    nanos = doneCondition.awaitNanos(nanos);
+                }
+                if (!isDone && !isCancelled) {
+                    throw new TimeoutException();
+                }
+                if (isCancelled) {
+                    throw new CancellationException();
+                }
+                if (executionException != null) {
+                    throw new ExecutionException(executionException);
+                }
+                return result;
+            } catch (TimeoutException te) {
+                throw new ExecutionException(te);
+            } finally {
+                lock.unlock();
+            }
+        }
+
+        public boolean cancel(boolean mayInterruptIfRunning) {
+            lock.lock();
+            try {
+                if (isDone || isCancelled) return false;
+
+                isCancelled = true;
+                isDone = true;
+                doneCondition.signalAll();
+                return true;
+            } finally {
+                lock.unlock();
+            }
+        }
+
+        @Override
+        public boolean isCancelled() {
+            return isCancelled;
+        }
+
+        @Override
+        public boolean isDone() {
+            return isDone;
+        }
+
+        @Override
+        public void run() {
+            if (isCancelled) return;
+
+            try {
+                V r = callable.call();
+                lock.lock();
+                result = r;
+            } catch (Exception e) {
+                lock.lock();
+                executionException = e;
+            } finally {
+                try {
+                    isDone = true;
+                    doneCondition.signalAll();
+                } finally {
+                    lock.unlock();
                 }
             }
         }
